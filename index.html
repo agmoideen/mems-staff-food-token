@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEMS TRIKARPUR - Food Token System</title>
+    <style>
+        :root {
+            --primary: #198754;
+            --secondary: #0f5132;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #eef2f5;
+            padding: 10px;
+            color: var(--dark);
+        }
+
+        .app-container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .header h2 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+
+        .header p {
+            font-size: 0.8rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        /* രഹസ്യമായ അഡ്മിൻ ലോഗിൻ ബട്ടൺ (കോർണറിൽ ചെറിയ ഐക്കൺ) */
+        .admin-trigger {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+        .admin-trigger:hover {
+            opacity: 1;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Token Card Style */
+        .token-card {
+            border: 2px dashed var(--primary);
+            background: #f9fff9;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .token-card h3 {
+            font-size: 1rem;
+            color: var(--secondary);
+        }
+
+        .token-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #d63384;
+            margin: 8px 0;
+        }
+
+        .staff-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #111;
+        }
+
+        .staff-info {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Admin Styles */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .admin-table th, .admin-table td {
+            border: 1px solid #ddd;
+            padding: 6px 4px;
+            text-align: center;
+        }
+
+        .admin-table th {
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-whatsapp { background: #25D366; }
+        .btn-print { background: #ffc107; color: #000; }
+        .btn-danger { background: #dc3545; }
+        .back-btn { background: #6c757d; margin-top: 10px; }
+
+        .print-only-header {
+            display: none;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .app-container {
+                box-shadow: none;
+                max-width: 100%;
+                width: 100%;
+                padding: 0;
+            }
+            .header, .admin-trigger, .input-group, .btn-submit, .admin-actions, #adminAuth, .token-card {
+                display: none !important;
+            }
+            .print-only-header {
+                display: block !important;
+            }
+            .admin-table {
+                font-size: 9pt;
+                width: 100%;
+            }
+            .admin-table th, .admin-table td {
+                padding: 8px 4px;
+                border: 1px solid #000 !important;
+            }
+            .admin-table th {
+                background-color: #eee !important;
+                color: black !important;
+            }
+            .no-print-col {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- സ്റ്റാഫുകൾക്ക് അഡ്മിൻ പാനൽ കാണാൻ കഴിയാത്ത വിധം ഇത് ഒളിപ്പിച്ചിരിക്കുന്നു. മുകളിലെ ചെറിയ ക്രെയ്ൻ/ലോക്ക് ഐക്കൺ ക്ലിക്ക് ചെയ്താൽ മാത്രം അഡ്മിൻ പാസ്‌വേഡ് ചോദിക്കും -->
+    <button class="admin-trigger" onclick="openAdminLogin()" title="Admin Login">⚙️</button>
+
+    <div class="header">
+        <div style="font-size: 2rem;">🏫</div>
+        <h2>MUJAMMAU ENGLISH MEDIUM SCHOOL</h2>
+        <p>IAME KASARAGOD DISTRICT ART FEST - FOOD TOKEN</p>
+    </div>
+
+    <div class="print-only-header">
+        <h2>MUJAMMAU ENGLISH MEDIUM SCHOOL, TRIKARPUR</h2>
+        <p><b>IAME KASARAGOD DISTRICT ART FEST - FOOD DISTRIBUTION MASTER LIST</b></p>
+        <hr style="margin-top: 5px;">
+    </div>
+
+    <!-- USER REGISTRATION SECTION (സ്റ്റാഫുകൾക്ക് കാണുന്നത്) -->
+    <div id="userSection" class="section active">
+        <form id="tokenForm" onsubmit="registerStaff(event)">
+            <div class="input-group">
+                <label>പൂർണ്ണമായ പേര് (Name):</label>
+                <input type="text" id="staffName" placeholder="ഉദാ: MOIDEEN KUNHI" required>
+            </div>
+            <div class="input-group">
+                <label>ഫോൺ നമ്പർ (Mobile Number):</label>
+                <input type="tel" id="staffPhone" pattern="[0-9]{10}" placeholder="10 അക്ക ഫോൺ നമ്പർ നൽകുക" required>
+            </div>
+            <button type="submit" class="btn-submit">🎫 ടോക്കൺ ജനറേറ്റ് ചെയ്യുക</button>
+        </form>
+
+        <div id="tokenResultCard" class="token-card">
+            <div style="font-size: 1.5rem;">🏫</div>
+            <h3>MEMS TRIKARPUR</h3>
+            <p style="font-size: 0.75rem; color:#555;">DISTRICT ART FEST FOOD TOKEN</p>
+            <hr style="border: 0.5px dashed #198754; margin: 8px 0;">
+            <div class="badge">OFFICIAL STAFF TOKEN</div>
+            <div class="token-number" id="cardTokenNo">#101</div>
+            <div class="staff-name" id="cardStaffName">STAFF NAME</div>
+            <div class="staff-info" id="cardStaffPhone">Phone: 0000000000</div>
+            <p style="font-size: 0.75rem; color: #d63384; font-weight: bold;">ഭക്ഷണ കൗണ്ടറിൽ ഈ ടോക്കൺ കാണിക്കുക</p>
+        </div>
+    </div>
+
+    <!-- ADMIN SECTION (അഡ്മിന് മാത്രം പാസ്‌വേഡ് നൽകി പ്രവേശിക്കാവുന്നത്) -->
+    <div id="adminSection" class="section">
+        <div id="adminAuth">
+            <h4 style="color: var(--primary); margin-bottom: 10px; text-align: center;">അഡ്മിൻ ലോഗിൻ</h4>
+            <div class="input-group">
+                <label>പാസ്‌വേഡ് നൽകുക:</label>
+                <input type="password" id="adminPass" placeholder="Password (1234)">
+            </div>
+            <button class="btn-submit" onclick="checkAdmin()">ലോഗിൻ ചെയ്യുക</button>
+            <button class="btn-action back-btn" onclick="backToUser()" style="width:100%;">🔙 തിരികെ പോവുക</button>
+        </div>
+
+        <div id="adminPanel" style="display: none;">
+            <h4 style="color: var(--primary); margin-bottom: 8px; text-align: center;">ഫുഡ് ടോക്കൺ രജിസ്‌ട്രേഷൻ ലിസ്റ്റ്</h4>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Token</th>
+                        <th style="width: 35%;">Name</th>
+                        <th style="width: 25%;">Phone</th>
+                        <th style="width: 15%;">Food Served</th>
+                        <th class="no-print-col" style="width: 10%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+
+            <div class="admin-actions">
+                <button class="btn-action btn-whatsapp" onclick="copyWhatsAppList()">📋 വാട്സാപ്പ് ലിസ്റ്റ് കോപ്പി ചെയ്യുക</button>
+                <button class="btn-action btn-print" onclick="window.print()">🖨️ എ4 സൈസിൽ പ്രിന്റ് / PDF സേവ് ചെയ്യുക</button>
+                <button class="btn-action btn-danger" onclick="resetAllData()">🔄 മുഴുവൻ ഡാറ്റയും ക്ലിയർ ചെയ്യുക</button>
+                <button class="btn-action back-btn" onclick="backToUser()">🔙 ഹോം പേജിലേക്ക് പോവുക</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let tokenList = JSON.parse(localStorage.getItem('mems_registered_food_tokens')) || [];
+
+    function saveTokens() {
+        localStorage.setItem('mems_registered_food_tokens', JSON.stringify(tokenList));
+    }
+
+    function registerStaff(e) {
+        e.preventDefault();
+        const name = document.getElementById('staffName').value.trim();
+        const phone = document.getElementById('staffPhone').value.trim();
+
+        const existingStaff = tokenList.find(s => s.phone === phone);
+
+        if (existingStaff) {
+            alert(`ഈ ഫോൺ നമ്പറിൽ (#${existingStaff.id}) എന്ന ടോക്കൺ നിലവിലുണ്ട്!`);
+            showTokenCard(existingStaff);
+            return;
+        }
+
+        const newTokenNo = tokenList.length > 0 ? Math.max(...tokenList.map(s => s.id)) + 1 : 101;
+
+        const newEntry = {
+            id: newTokenNo,
+            name: name,
+            phone: phone
+        };
+
+        tokenList.push(newEntry);
+        saveTokens();
+        showTokenCard(newEntry);
+        document.getElementById('tokenForm').reset();
+    }
+
+    function showTokenCard(staff) {
+        document.getElementById('cardTokenNo').innerText = `#${staff.id}`;
+        document.getElementById('cardStaffName').innerText = staff.name;
+        document.getElementById('cardStaffPhone').innerText = `Phone: ${staff.phone}`;
+        document.getElementById('tokenResultCard').style.display = 'block';
+    }
+
+    function openAdminLogin() {
+        document.getElementById('userSection').classList.remove('active');
+        document.getElementById('adminSection').classList.add('active');
+        document.getElementById('adminAuth').style.display = 'block';
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminPass').value = "";
+    }
+
+    function backToUser() {
+        document.getElementById('adminSection').classList.remove('active');
+        document.getElementById('userSection').classList.add('active');
+    }
+
+    function checkAdmin() {
+        const pass = document.getElementById('adminPass').value;
+        if (pass === "1234") { // അഡ്മിൻ പാസ്‌വേഡ്
+            document.getElementById('adminAuth').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            renderAdminTable();
+        } else {
+            alert("തെറ്റായ പാസ്‌വേഡ്!");
+        }
+    }
+
+    function renderAdminTable() {
+        const tbody = document.getElementById('adminTableBody');
+        tbody.innerHTML = "";
+        
+        if(tokenList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5">ആരും ഇതുവരെ രജിസ്റ്റർ ചെയ്തിട്ടില്ല</td></tr>`;
+            return;
+        }
+
+        tokenList.forEach((staff, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>#${staff.id}</b></td>
+                <td style="text-align:left; padding-left:5px;">${staff.name}</td>
+                <td>${staff.phone}</td>
+                <td>[ &nbsp;&nbsp; ]</td>
+                <td class="no-print-col"><button style="background:#dc3545; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;" onclick="deleteEntry(${index})">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteEntry(index) {
+        if (confirm("ഈ ടോക്കൺ ഒഴിവാക്കണമെന്നുറപ്പാണോ?")) {
+            tokenList.splice(index, 1);
+            saveTokens();
+            renderAdminTable();
+        }
+    }
+
+    function copyWhatsAppList() {
+        if(tokenList.length === 0) {
+            alert("ലിസ്റ്റിൽ വിവരങ്ങളൊന്നുമില്ല!");
+            return;
+        }
+
+        let report = `🏫 *MEMS TRIKARPUR - FOOD TOKEN LIST*\n`;
+        report += `🍱 *IAME District Art Fest Staff Food Registration*\n\n`;
+
+        tokenList.forEach((staff) => {
+            report += `🎫 *Token #${staff.id}* - ${staff.name} (${staff.phone})\n`;
+        });
+
+        report += `\n*Total Tokens Generated:* ${tokenList.length}`;
+
+        navigator.clipboard.writeText(report).then(() => {
+            alert("വാട്സാപ്പ് ലിസ്റ്റ് കോപ്പി ചെയ്തു! ഗ്രൂപ്പിലേക്ക് പേസ്റ്റ് ചെയ്യാം.");
+        }).catch(() => {
+            alert("കോപ്പി ചെയ്യാൻ സാധിച്ചില്ല.");
+        });
+    }
+
+    function resetAllData() {
+        if (confirm("മുഴുവൻ രജിസ്‌ട്രേഷൻ വിവരങ്ങളും മാച്ചുുകളയണമെന്നുറപ്പാണോ?")) {
+            tokenList = [];
+            saveTokens();
+            renderAdminTable();
+        }
+    }
+</script>
+
+</body>
+</html>
