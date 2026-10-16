@@ -213,7 +213,6 @@
 
         .btn-whatsapp { background: #25D366; }
         .btn-print { background: #ffc107; color: #000; }
-        .btn-danger { background: #dc3545; }
         .back-btn { background: #6c757d; margin-top: 10px; }
 
         .print-only-header {
@@ -222,7 +221,6 @@
             margin-bottom: 15px;
         }
 
-        /* Loading Spinner */
         #loadingOverlay {
             display: none;
             text-align: center;
@@ -260,9 +258,6 @@
                 background-color: #eee !important;
                 color: black !important;
             }
-            .no-print-col {
-                display: none !important;
-            }
         }
     </style>
 </head>
@@ -297,10 +292,9 @@
             <button type="submit" id="submitBtn" class="btn-submit">🎫 ടോക്കൺ ജനറേറ്റ് ചെയ്യുക</button>
         </form>
 
-        <div id="loadingOverlay">⏳ ഡാറ്റ സേവ് ചെയ്യുന്നു, ദയവായി കാത്തിരിക്കുക...</div>
+        <div id="loadingOverlay">⏳ ടോക്കൺ ജനറേറ്റ് ചെയ്യുന്നു, ദയവായി കാത്തിരിക്കുക...</div>
 
         <div id="tokenResultCard" class="token-card">
-            <!-- ഈ ഭാഗം മാത്രം ഇമേജ് ആയി സേവ് ചെയ്യപ്പെടും -->
             <div id="captureArea" class="token-box-inner">
                 <div style="font-size: 1.5rem;">🏫</div>
                 <h3>MEMS TRIKARPUR</h3>
@@ -355,8 +349,8 @@
 </div>
 
 <script>
-    // ഗൂഗിൾ ആപ്സ് സ്ക്രിപ്റ്റ് വെബ് ആപ്പ് ലിങ്ക്
-    const scriptURL = "https://script.google.com/macros/s/AKfycby_ygJYAMvTwTLY1j0JM2tSNwy8Wn4PFN0zMJKUHV01BpqWsOUnsqnJgda9b8_WdjX9lQ/exec";
+    // പുതിയ ഗൂഗിൾ ആപ്സ് സ്ക്രിപ്റ്റ് വെബ് ആപ്പ് ലിങ്ക് ഇവിടെ നൽകിയിരിക്കുന്നു
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx6cj8K76stOHRmwGB78k9r5u7Dya_N2WsFvOUZmLw8Wt4bQEX3s_I006yTT8XySYihsw/exec";
     let cachedTokenList = [];
 
     function registerStaff(e) {
@@ -374,18 +368,20 @@
 
         fetch(scriptURL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: name, phone: phone })
         })
-        .then(() => {
+        .then(res => res.json())
+        .then(data => {
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('submitBtn').style.display = 'block';
             
-            // ലോക്കൽ കാർഡിൽ കാണിക്കാൻ താൽക്കാലികമായി ഒരു ടോക്കൺ നൽകുന്നു
-            showTokenCard({ id: "NEW", name: name, phone: phone });
+            showTokenCard(data);
             document.getElementById('tokenForm').reset();
-            alert("ടോക്കൺ വിജയകരമായി ജനറേറ്റ് ചെയ്തു!");
+            if(data.status === "exists") {
+                alert(`ഈ ഫോൺ നമ്പറിൽ (#${data.id}) ടോക്കൺ നിലവിലുണ്ട്!`);
+            } else {
+                alert("ടോക്കൺ വിജയകരമായി ജനറേറ്റ് ചെയ്തു!");
+            }
         })
         .catch(error => {
             document.getElementById('loadingOverlay').style.display = 'none';
@@ -396,7 +392,7 @@
     }
 
     function showTokenCard(staff) {
-        document.getElementById('cardTokenNo').innerText = staff.id === "NEW" ? "Saved" : `#${staff.id}`;
+        document.getElementById('cardTokenNo').innerText = `#${staff.id}`;
         document.getElementById('cardStaffName').innerText = staff.name;
         document.getElementById('cardStaffPhone').innerText = `Phone: ${staff.phone}`;
         const cardElement = document.getElementById('tokenResultCard');
@@ -443,7 +439,6 @@
         document.getElementById('adminLoading').style.display = 'block';
         tbody.innerHTML = "";
 
-        // ഗൂഗിൾ ഷീറ്റിൽ നിന്ന് ഡാറ്റ റീഡ് ചെയ്യാൻ വേണ്ടി അതേ സ്ക്രിപ്റ്റ് ഗെറ്റ് റിക്വസ്റ്റ് ഉപയോഗിക്കുന്നു
         fetch(scriptURL)
         .then(res => res.json())
         .then(data => {
