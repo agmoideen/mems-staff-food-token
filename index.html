@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEMS TRIKARPUR - Food Token System</title>
+    <!-- html2canvas ലൈബ്രറി ടോക്കൺ ഇമേജ് ആയി ഡൗൺലോഡ് ചെയ്യാൻ സഹായിക്കുന്നു -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --primary: #198754;
@@ -54,7 +56,6 @@
             font-weight: bold;
         }
 
-        /* രഹസ്യമായ അഡ്മിൻ ലോഗിൻ ബട്ടൺ (കോർണറിൽ ചെറിയ ഐക്കൺ) */
         .admin-trigger {
             position: absolute;
             top: 10px;
@@ -153,6 +154,19 @@
             font-weight: bold;
         }
 
+        .download-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
         /* Admin Styles */
         .admin-table {
             width: 100%;
@@ -239,7 +253,6 @@
 <body>
 
 <div class="app-container">
-    <!-- സ്റ്റാഫുകൾക്ക് അഡ്മിൻ പാനൽ കാണാൻ കഴിയാത്ത വിധം ഇത് ഒളിപ്പിച്ചിരിക്കുന്നു. മുകളിലെ ചെറിയ ക്രെയ്ൻ/ലോക്ക് ഐക്കൺ ക്ലിക്ക് ചെയ്താൽ മാത്രം അഡ്മിൻ പാസ്‌വേഡ് ചോദിക്കും -->
     <button class="admin-trigger" onclick="openAdminLogin()" title="Admin Login">⚙️</button>
 
     <div class="header">
@@ -254,7 +267,7 @@
         <hr style="margin-top: 5px;">
     </div>
 
-    <!-- USER REGISTRATION SECTION (സ്റ്റാഫുകൾക്ക് കാണുന്നത്) -->
+    <!-- USER REGISTRATION SECTION -->
     <div id="userSection" class="section active">
         <form id="tokenForm" onsubmit="registerStaff(event)">
             <div class="input-group">
@@ -269,19 +282,22 @@
         </form>
 
         <div id="tokenResultCard" class="token-card">
-            <div style="font-size: 1.5rem;">🏫</div>
-            <h3>MEMS TRIKARPUR</h3>
-            <p style="font-size: 0.75rem; color:#555;">DISTRICT ART FEST FOOD TOKEN</p>
-            <hr style="border: 0.5px dashed #198754; margin: 8px 0;">
-            <div class="badge">OFFICIAL STAFF TOKEN</div>
-            <div class="token-number" id="cardTokenNo">#101</div>
-            <div class="staff-name" id="cardStaffName">STAFF NAME</div>
-            <div class="staff-info" id="cardStaffPhone">Phone: 0000000000</div>
-            <p style="font-size: 0.75rem; color: #d63384; font-weight: bold;">ഭക്ഷണ കൗണ്ടറിൽ ഈ ടോക്കൺ കാണിക്കുക</p>
+            <div id="captureArea" style="background: #f9fff9; padding: 10px; border-radius: 8px;">
+                <div style="font-size: 1.5rem;">🏫</div>
+                <h3>MEMS TRIKARPUR</h3>
+                <p style="font-size: 0.75rem; color:#555;">DISTRICT ART FEST FOOD TOKEN</p>
+                <hr style="border: 0.5px dashed #198754; margin: 8px 0;">
+                <div class="badge">OFFICIAL STAFF TOKEN</div>
+                <div class="token-number" id="cardTokenNo">#101</div>
+                <div class="staff-name" id="cardStaffName">STAFF NAME</div>
+                <div class="staff-info" id="cardStaffPhone">Phone: 0000000000</div>
+                <p style="font-size: 0.75rem; color: #d63384; font-weight: bold;">ഭക്ഷണ കൗണ്ടറിൽ ഈ ടോക്കൺ കാണിക്കുക</p>
+            </div>
+            <button class="download-btn" onclick="downloadTokenImage()">📱 ടോക്കൺ ഇമേജ് ആയി സേവ് ചെയ്യുക</button>
         </div>
     </div>
 
-    <!-- ADMIN SECTION (അഡ്മിന് മാത്രം പാസ്‌വേഡ് നൽകി പ്രവേശിക്കാവുന്നത്) -->
+    <!-- ADMIN SECTION -->
     <div id="adminSection" class="section">
         <div id="adminAuth">
             <h4 style="color: var(--primary); margin-bottom: 10px; text-align: center;">അഡ്മിൻ ലോഗിൻ</h4>
@@ -360,6 +376,16 @@
         document.getElementById('tokenResultCard').style.display = 'block';
     }
 
+    function downloadTokenImage() {
+        const captureElement = document.getElementById('captureArea');
+        html2canvas(captureElement).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'mems-food-token.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+
     function openAdminLogin() {
         document.getElementById('userSection').classList.remove('active');
         document.getElementById('adminSection').classList.add('active');
@@ -375,7 +401,7 @@
 
     function checkAdmin() {
         const pass = document.getElementById('adminPass').value;
-        if (pass === "1234") { // അഡ്മിൻ പാസ്‌വേഡ്
+        if (pass === "1234") {
             document.getElementById('adminAuth').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
             renderAdminTable();
