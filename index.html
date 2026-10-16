@@ -213,6 +213,7 @@
 
         .btn-whatsapp { background: #25D366; }
         .btn-print { background: #ffc107; color: #000; }
+        .btn-danger { background: #dc3545; }
         .back-btn { background: #6c757d; margin-top: 10px; }
 
         .print-only-header {
@@ -342,6 +343,7 @@
             <div class="admin-actions">
                 <button class="btn-action btn-whatsapp" onclick="copyWhatsAppList()">📋 വാട്സാപ്പ് ലിസ്റ്റ് കോപ്പി ചെയ്യുക</button>
                 <button class="btn-action btn-print" onclick="window.print()">🖨️ എ4 സൈസിൽ പ്രിന്റ് / PDF സേവ് ചെയ്യുക</button>
+                <button class="btn-action btn-danger" onclick="resetSheetNotice()">🔄 ലിസ്റ്റ് ക്ലിയർ ചെയ്യുന്ന വിധം</button>
                 <button class="btn-action back-btn" onclick="backToUser()">🔙 ഹോം പേജിലേക്ക് പോവുക</button>
             </div>
         </div>
@@ -349,7 +351,6 @@
 </div>
 
 <script>
-    // പുതിയ ഗൂഗിൾ ആപ്സ് സ്ക്രിപ്റ്റ് വെബ് ആപ്പ് ലിങ്ക് ഇവിടെ നൽകിയിരിക്കുന്നു
     const scriptURL = "https://script.google.com/macros/s/AKfycbx6cj8K76stOHRmwGB78k9r5u7Dya_N2WsFvOUZmLw8Wt4bQEX3s_I006yTT8XySYihsw/exec";
     let cachedTokenList = [];
 
@@ -465,6 +466,10 @@
             document.getElementById('adminLoading').style.display = 'none';
             tbody.innerHTML = `<tr><td colspan="4" style="color:red;">ഡാറ്റ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</td></tr>`;
         });
+    }
+
+    function resetSheetNotice() {
+        alert("ഡാറ്റ റീസെറ്റ് ചെയ്യാൻ:\nനിങ്ങളുടെ ഗൂഗിൾ ഷീറ്റ് ഓപ്പൺ ചെയ്ത്, പഴയ ഡെറ്റ വരികൾ മാത്രം സെലക്ട് ചെയ്ത് Clear/Delete ചെയ്യുക. (തലക്കെട്ട് ആയ Row 1 ഡിലീറ്റ് ചെയ്യരുത്). അടുത്ത ടോക്കൺ വീണ്ടും #101 മുതൽ സ്റ്റാർട്ട് ആകും!");
     }
 
     function copyWhatsAppList() {
