@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEMS TRIKARPUR - Food Token System</title>
-    <!-- html2canvas ലൈബ്രറി ടോക്കൺ ഇമേജ് ആയി ഡൗൺലോഡ് ചെയ്യാൻ സഹായിക്കുന്നു -->
+    <!-- html2canvas library for saving token as image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -111,13 +111,19 @@
 
         /* Token Card Style */
         .token-card {
-            border: 2px dashed var(--primary);
             background: #f9fff9;
-            padding: 15px;
+            padding: 10px;
             border-radius: 10px;
             text-align: center;
             margin-top: 15px;
             display: none;
+        }
+
+        .token-box-inner {
+            border: 2px dashed var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            background: white;
         }
 
         .token-card h3 {
@@ -141,7 +147,7 @@
         .staff-info {
             font-size: 0.85rem;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .badge {
@@ -158,13 +164,14 @@
             background: #0d6efd;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             font-weight: bold;
             margin-top: 10px;
             cursor: pointer;
             width: 100%;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
         /* Admin Styles */
@@ -213,6 +220,15 @@
             display: none;
             text-align: center;
             margin-bottom: 15px;
+        }
+
+        /* Loading Spinner */
+        #loadingOverlay {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            color: var(--primary);
         }
 
         @media print {
@@ -278,11 +294,14 @@
                 <label>ഫോൺ നമ്പർ (Mobile Number):</label>
                 <input type="tel" id="staffPhone" pattern="[0-9]{10}" placeholder="10 അക്ക ഫോൺ നമ്പർ നൽകുക" required>
             </div>
-            <button type="submit" class="btn-submit">🎫 ടോക്കൺ ജനറേറ്റ് ചെയ്യുക</button>
+            <button type="submit" id="submitBtn" class="btn-submit">🎫 ടോക്കൺ ജനറേറ്റ് ചെയ്യുക</button>
         </form>
 
+        <div id="loadingOverlay">⏳ ഡാറ്റ സേവ് ചെയ്യുന്നു, ദയവായി കാത്തിരിക്കുക...</div>
+
         <div id="tokenResultCard" class="token-card">
-            <div id="captureArea" style="background: #f9fff9; padding: 10px; border-radius: 8px;">
+            <!-- ഈ ഭാഗം മാത്രം ഇമേജ് ആയി സേവ് ചെയ്യപ്പെടും -->
+            <div id="captureArea" class="token-box-inner">
                 <div style="font-size: 1.5rem;">🏫</div>
                 <h3>MEMS TRIKARPUR</h3>
                 <p style="font-size: 0.75rem; color:#555;">DISTRICT ART FEST FOOD TOKEN</p>
@@ -291,7 +310,7 @@
                 <div class="token-number" id="cardTokenNo">#101</div>
                 <div class="staff-name" id="cardStaffName">STAFF NAME</div>
                 <div class="staff-info" id="cardStaffPhone">Phone: 0000000000</div>
-                <p style="font-size: 0.75rem; color: #d63384; font-weight: bold;">ഭക്ഷണ കൗണ്ടറിൽ ഈ ടോക്കൺ കാണിക്കുക</p>
+                <p style="font-size: 0.75rem; color: #d63384; font-weight: bold; margin-top: 5px;">ഭക്ഷണ കൗണ്ടറിൽ ഈ ടോക്കൺ കാണിക്കുക</p>
             </div>
             <button class="download-btn" onclick="downloadTokenImage()">📱 ടോക്കൺ ഇമേജ് ആയി സേവ് ചെയ്യുക</button>
         </div>
@@ -310,16 +329,17 @@
         </div>
 
         <div id="adminPanel" style="display: none;">
-            <h4 style="color: var(--primary); margin-bottom: 8px; text-align: center;">ഫുഡ് ടോക്കൺ രജിസ്‌ട്രേഷൻ ലിസ്റ്റ്</h4>
+            <h4 style="color: var(--primary); margin-bottom: 8px; text-align: center;">ഗൂഗിൾ ഷീറ്റ് ഫുഡ് ടോക്കൺ ലിസ്റ്റ്</h4>
+
+            <div id="adminLoading" style="text-align:center; padding:10px; font-weight:bold; color:var(--primary);">⏳ ലിസ്റ്റ് ലോഡ് ചെയ്യുന്നു...</div>
 
             <table class="admin-table">
                 <thead>
                     <tr>
                         <th style="width: 15%;">Token</th>
-                        <th style="width: 35%;">Name</th>
-                        <th style="width: 25%;">Phone</th>
+                        <th style="width: 40%;">Name</th>
+                        <th style="width: 30%;">Phone</th>
                         <th style="width: 15%;">Food Served</th>
-                        <th class="no-print-col" style="width: 10%;">Action</th>
                     </tr>
                 </thead>
                 <tbody id="adminTableBody"></tbody>
@@ -328,7 +348,6 @@
             <div class="admin-actions">
                 <button class="btn-action btn-whatsapp" onclick="copyWhatsAppList()">📋 വാട്സാപ്പ് ലിസ്റ്റ് കോപ്പി ചെയ്യുക</button>
                 <button class="btn-action btn-print" onclick="window.print()">🖨️ എ4 സൈസിൽ പ്രിന്റ് / PDF സേവ് ചെയ്യുക</button>
-                <button class="btn-action btn-danger" onclick="resetAllData()">🔄 മുഴുവൻ ഡാറ്റയും ക്ലിയർ ചെയ്യുക</button>
                 <button class="btn-action back-btn" onclick="backToUser()">🔙 ഹോം പേജിലേക്ക് പോവുക</button>
             </div>
         </div>
@@ -336,51 +355,60 @@
 </div>
 
 <script>
-    let tokenList = JSON.parse(localStorage.getItem('mems_registered_food_tokens')) || [];
-
-    function saveTokens() {
-        localStorage.setItem('mems_registered_food_tokens', JSON.stringify(tokenList));
-    }
+    // ഗൂഗിൾ ആപ്സ് സ്ക്രിപ്റ്റ് വെബ് ആപ്പ് ലിങ്ക്
+    const scriptURL = "https://script.google.com/macros/s/AKfycby_ygJYAMvTwTLY1j0JM2tSNwy8Wn4PFN0zMJKUHV01BpqWsOUnsqnJgda9b8_WdjX9lQ/exec";
+    let cachedTokenList = [];
 
     function registerStaff(e) {
         e.preventDefault();
         const name = document.getElementById('staffName').value.trim();
         const phone = document.getElementById('staffPhone').value.trim();
 
-        const existingStaff = tokenList.find(s => s.phone === phone);
-
-        if (existingStaff) {
-            alert(`ഈ ഫോൺ നമ്പറിൽ (#${existingStaff.id}) എന്ന ടോക്കൺ നിലവിലുണ്ട്!`);
-            showTokenCard(existingStaff);
+        if(phone.length !== 10) {
+            alert("ദയവായി കൃത്യമായ 10 അക്ക ഫോൺ നമ്പർ നൽകുക!");
             return;
         }
 
-        const newTokenNo = tokenList.length > 0 ? Math.max(...tokenList.map(s => s.id)) + 1 : 101;
+        document.getElementById('submitBtn').style.display = 'none';
+        document.getElementById('loadingOverlay').style.display = 'block';
 
-        const newEntry = {
-            id: newTokenNo,
-            name: name,
-            phone: phone
-        };
-
-        tokenList.push(newEntry);
-        saveTokens();
-        showTokenCard(newEntry);
-        document.getElementById('tokenForm').reset();
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, phone: phone })
+        })
+        .then(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'block';
+            
+            // ലോക്കൽ കാർഡിൽ കാണിക്കാൻ താൽക്കാലികമായി ഒരു ടോക്കൺ നൽകുന്നു
+            showTokenCard({ id: "NEW", name: name, phone: phone });
+            document.getElementById('tokenForm').reset();
+            alert("ടോക്കൺ വിജയകരമായി ജനറേറ്റ് ചെയ്തു!");
+        })
+        .catch(error => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'block';
+            alert("എന്തെങ്കിലും പ്രശ്നം സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക!");
+            console.error('Error!', error.message);
+        });
     }
 
     function showTokenCard(staff) {
-        document.getElementById('cardTokenNo').innerText = `#${staff.id}`;
+        document.getElementById('cardTokenNo').innerText = staff.id === "NEW" ? "Saved" : `#${staff.id}`;
         document.getElementById('cardStaffName').innerText = staff.name;
         document.getElementById('cardStaffPhone').innerText = `Phone: ${staff.phone}`;
-        document.getElementById('tokenResultCard').style.display = 'block';
+        const cardElement = document.getElementById('tokenResultCard');
+        cardElement.style.display = 'block';
+        cardElement.scrollIntoView({ behavior: 'smooth' });
     }
 
     function downloadTokenImage() {
         const captureElement = document.getElementById('captureArea');
-        html2canvas(captureElement).then(canvas => {
+        html2canvas(captureElement, { scale: 2 }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'mems-food-token.png';
+            link.download = `MEMS-Food-Token.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
@@ -404,44 +432,48 @@
         if (pass === "1234") {
             document.getElementById('adminAuth').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            renderAdminTable();
+            fetchAdminData();
         } else {
             alert("തെറ്റായ പാസ്‌വേഡ്!");
         }
     }
 
-    function renderAdminTable() {
+    function fetchAdminData() {
         const tbody = document.getElementById('adminTableBody');
+        document.getElementById('adminLoading').style.display = 'block';
         tbody.innerHTML = "";
-        
-        if(tokenList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5">ആരും ഇതുവരെ രജിസ്റ്റർ ചെയ്തിട്ടില്ല</td></tr>`;
-            return;
-        }
 
-        tokenList.forEach((staff, index) => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><b>#${staff.id}</b></td>
-                <td style="text-align:left; padding-left:5px;">${staff.name}</td>
-                <td>${staff.phone}</td>
-                <td>[ &nbsp;&nbsp; ]</td>
-                <td class="no-print-col"><button style="background:#dc3545; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;" onclick="deleteEntry(${index})">X</button></td>
-            `;
-            tbody.appendChild(tr);
+        // ഗൂഗിൾ ഷീറ്റിൽ നിന്ന് ഡാറ്റ റീഡ് ചെയ്യാൻ വേണ്ടി അതേ സ്ക്രിപ്റ്റ് ഗെറ്റ് റിക്വസ്റ്റ് ഉപയോഗിക്കുന്നു
+        fetch(scriptURL)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('adminLoading').style.display = 'none';
+            cachedTokenList = data;
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4">ആരും ഇതുവരെ രജിസ്റ്റർ ചെയ്തിട്ടില്ല</td></tr>`;
+                return;
+            }
+
+            data.forEach((staff) => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>#${staff.id}</b></td>
+                    <td style="text-align:left; padding-left:5px;">${staff.name}</td>
+                    <td>${staff.phone}</td>
+                    <td>[ &nbsp;&nbsp; ]</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => {
+            document.getElementById('adminLoading').style.display = 'none';
+            tbody.innerHTML = `<tr><td colspan="4" style="color:red;">ഡാറ്റ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</td></tr>`;
         });
     }
 
-    function deleteEntry(index) {
-        if (confirm("ഈ ടോക്കൺ ഒഴിവാക്കണമെന്നുറപ്പാണോ?")) {
-            tokenList.splice(index, 1);
-            saveTokens();
-            renderAdminTable();
-        }
-    }
-
     function copyWhatsAppList() {
-        if(tokenList.length === 0) {
+        if(cachedTokenList.length === 0) {
             alert("ലിസ്റ്റിൽ വിവരങ്ങളൊന്നുമില്ല!");
             return;
         }
@@ -449,25 +481,17 @@
         let report = `🏫 *MEMS TRIKARPUR - FOOD TOKEN LIST*\n`;
         report += `🍱 *IAME District Art Fest Staff Food Registration*\n\n`;
 
-        tokenList.forEach((staff) => {
+        cachedTokenList.forEach((staff) => {
             report += `🎫 *Token #${staff.id}* - ${staff.name} (${staff.phone})\n`;
         });
 
-        report += `\n*Total Tokens Generated:* ${tokenList.length}`;
+        report += `\n*Total Registered:* ${cachedTokenList.length}`;
 
         navigator.clipboard.writeText(report).then(() => {
             alert("വാട്സാപ്പ് ലിസ്റ്റ് കോപ്പി ചെയ്തു! ഗ്രൂപ്പിലേക്ക് പേസ്റ്റ് ചെയ്യാം.");
         }).catch(() => {
             alert("കോപ്പി ചെയ്യാൻ സാധിച്ചില്ല.");
         });
-    }
-
-    function resetAllData() {
-        if (confirm("മുഴുവൻ രജിസ്‌ട്രേഷൻ വിവരങ്ങളും മാച്ചുുകളയണമെന്നുറപ്പാണോ?")) {
-            tokenList = [];
-            saveTokens();
-            renderAdminTable();
-        }
     }
 </script>
 
